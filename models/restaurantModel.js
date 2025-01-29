@@ -1,55 +1,35 @@
 import mongoose from 'mongoose';
 
-const restaurantSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-  },
-  address: {
-    type: String,
-    required: true,
-  },
-  contactInfo: {
-    phone: {
+const restaurantSchema = new mongoose.Schema(
+  {
+    name: {
       type: String,
-      required: true,
+      required: true, // Restaurant name is mandatory
     },
-    email: {
+    address: {
       type: String,
-      required: true,
+      required: true, // Address is mandatory
     },
-  },
-  cuisineType: {
-    type: String,
-    enum: ['Italian', 'Chinese', 'Indian', 'Mexican', 'American', 'Other'],
-  },
-  rating: {
-    type: Number,
-    min: 0,
-    max: 5,
-    default: 0,
-  },
-  menu: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Menu',
+    contact: {
+      type: String,
+      required: true, // Contact info is mandatory (e.g., phone or email)
     },
-  ],
-  isFeatured: {
-    type: Boolean,
-    default: false,
+    cuisine: {
+      type: String,
+      default: 'Other', // Default to 'Other' if no specific cuisine is provided
+    },
+    image: {
+      type: String,
+      default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaLGtEd0MJro4X9wDmT2vrvLT-HjKkyyWVmg&s",
   },
-  openingHours: {
-    type: String,
-    required: true, // e.g., "9:00 AM - 9:00 PM"
+    menu: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Menu', // Reference to the Menu model
+      },
+    ],
   },
-  imageUrl: {  // New image field for restaurant's logo/banner
-    type: String,
-    default: 'https://example.com/restaurant-placeholder-image.png', // Placeholder image URL
-  },
-}, { timestamps: true });
+  { timestamps: true } // Automatically add createdAt and updatedAt fields
+);
 
 export const Restaurant = mongoose.model('Restaurant', restaurantSchema);

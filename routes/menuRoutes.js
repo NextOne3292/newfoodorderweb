@@ -1,29 +1,23 @@
-import express from 'express';
+import express from "express";
 import {
+  getAllMenuItems,
+  getMenuItemById,
   createMenuItem,
-  getMenuItemsByRestaurant,
-  getMenuItem,
   updateMenuItem,
   deleteMenuItem,
-} from '../controllers/menuControllers.js';
-import {userAuth} from '../middlewares/userAuth.js';
-import {adminAuth} from '../middlewares/adminAuth.js';
+} from "../controllers/menuControllers.js";
+import { adminAuth } from "../middlewares/adminAuth.js";
+import { upload } from "../middlewares/multer.js";
 
 const router = express.Router();
 
-// Create a menu item (admin only)
-router.post('/', userAuth, adminAuth, createMenuItem);
+// Public routes
+router.get("/", getAllMenuItems); // Get all menu items
+router.get("/:id", getMenuItemById); // Get menu item by ID
 
-// Get all menu items for a specific restaurant
-router.get('/restaurant/:restaurantId', getMenuItemsByRestaurant);
+// Admin-only routes
+router.post("/", adminAuth, upload.single("image"), createMenuItem); // Add a menu item
+router.put("/:id", adminAuth, upload.single("image"), updateMenuItem); // Update a menu item
+router.delete("/:id", adminAuth, deleteMenuItem); // Delete a menu item
 
-// Get a single menu item by ID
-router.get('/:id', getMenuItem);
-
-// Update a menu item (admin only)
-router.put('/:id', userAuth, adminAuth, updateMenuItem);
-
-// Delete a menu item (admin only)
-router.delete('/:id', userAuth, adminAuth, deleteMenuItem);
-
-export { router as menuRouter };
+export { router as menuRouter } ;

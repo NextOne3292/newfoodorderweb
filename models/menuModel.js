@@ -1,33 +1,33 @@
 import mongoose from "mongoose";
 
-const menuSchema = new mongoose.Schema({
-  restaurantId: {
-    type: mongoose.Schema.Types.ObjectId, // Assuming you're using ObjectId for restaurants
-    required: true,
-    ref: 'Restaurant' // Reference to the Restaurant model
+const menuSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true, // Menu item name is mandatory
+    },
+    description: {
+      type: String, // Short description of the menu item
+    },
+    price: {
+      type: Number,
+      required: true, // Price is mandatory
+    },
+    restaurant: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Restaurant", // Reference to the Restaurant model
+      required: true,
+    },
+    imageUrl: {
+      type: String,
+      default: "https://example.com/food-placeholder-image.png", // Default placeholder image
+    },
+    isAvailable: {
+      type: Boolean,
+      default: true, // Default availability is true
+    },
   },
-  itemName: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
-  imageUrl: {
-    type: String,
-    default: 'https://example.com/placeholder-image.png' // Placeholder image URL
-  },
-  category: {
-    type: String,
-    enum: ['starter', 'main', 'dessert', 'drink'],
-  }, isAvailable: {
-    type: Boolean,
-    default: true, // Indicates whether the menu item is available for ordering
-  },
-}, { timestamps: true });
+  { timestamps: true } // Automatically add createdAt and updatedAt fields
+);
 
-export const Menu = mongoose.model('Menu', menuSchema);
+export const Menu = mongoose.model("Menu", menuSchema);

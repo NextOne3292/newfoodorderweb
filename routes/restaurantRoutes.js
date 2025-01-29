@@ -1,29 +1,24 @@
-import express from 'express';
+import express from "express";
 import { 
-  createRestaurant, 
-  getRestaurants, 
-  getRestaurant, 
-  updateRestaurant, 
-  deleteRestaurant 
-} from '../controllers/restaurantControllers.js';
-import {userAuth} from '../middlewares/userAuth.js';
-import {adminAuth} from '../middlewares/adminAuth.js';
+    getAllRestaurants, 
+    getRestaurantById, 
+    createRestaurant, 
+    updateRestaurant, 
+    deleteRestaurant 
+} from "../controllers/restaurantControllers.js";
+import { adminAuth } from "../middlewares/adminAuth.js";
+
+import { upload } from "../middlewares/multer.js";
 
 const router = express.Router();
 
-// Create a restaurant (Admin only)
-router.post('/',userAuth, adminAuth, createRestaurant);
+// Public routes
+router.get("/", getAllRestaurants); // Get all restaurants
+router.get("/:id", getRestaurantById); // Get restaurant by ID
 
-// Get all restaurants
-router.get('/', getRestaurants);
-
-// Get a single restaurant by ID
-router.get('/:id', getRestaurant);
-
-// Update a restaurant (Admin only)
-router.put('/:id', userAuth,adminAuth, updateRestaurant);
-
-// Delete a restaurant (Admin only)
-router.delete('/:id', userAuth, adminAuth, deleteRestaurant);
+// Admin-only routes
+router.post("/", adminAuth, upload.single("image"), createRestaurant); // Add a restaurant
+router.put("/:id", adminAuth, upload.single("image"), updateRestaurant); // Update a restaurant
+router.delete("/:id", adminAuth, deleteRestaurant); // Delete a restaurant
 
 export { router as restaurantRouter };
