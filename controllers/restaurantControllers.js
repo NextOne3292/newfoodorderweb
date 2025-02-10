@@ -1,5 +1,6 @@
-import { Restaurant } from "../models/restaurantModel.js"; // Adjust path as per your file structure
-import { cloudinaryInstance } from "../config/cloudinaryConfig.js";
+import { Restaurant } from "../models/restaurantModel.js"; 
+import { cloudinary } from "../config/cloudinaryConfig.js";
+
 
 // Get all restaurants
 export const getAllRestaurants = async (req, res) => {
@@ -30,24 +31,23 @@ export const getRestaurantById = async (req, res) => {
 // Create a new restaurant
 export const createRestaurant = async (req, res) => {
     try {
-      let imageUrl;
-        const { name, address, contact, cuisine, image } = req.body;
+        const { name, address, contact, cuisine } = req.body;
+        let imageUrl = "";
 
-        // Upload image to Cloudinary if provided
-       
+        // Check if file is uploaded
         if (req.file) {
-            const cloudinaryRes = await cloudinaryInstance.uploader.upload(req.file.path);
-            imageUrl = cloudinaryRes.url;
+            imageUrl = req.file.path; // Get uploaded image URL from Cloudinary
         }
-        console.log(imageUrl,'===imageUrl');
 
         const newRestaurant = new Restaurant({
             name,
             address,
             contact,
             cuisine,
-            image: imageUrl });
-            await newRestaurant.save();
+            image: imageUrl
+        });
+
+        await newRestaurant.save();
 
         res.status(201).json({ success: true, data: newRestaurant });
     } catch (error) {
@@ -63,8 +63,7 @@ export const updateRestaurant = async (req, res) => {
 
         // Upload new image to Cloudinary if provided
         if (req.file) {
-            const result = await cloudinaryInstance.uploader.upload(req.file.path);
-            updates.imageUrl = result.secure_url;
+            updates.image = req.file.path; // Update image URL
         }
 
         const updatedRestaurant = await Restaurant.findByIdAndUpdate(id, updates, { new: true });

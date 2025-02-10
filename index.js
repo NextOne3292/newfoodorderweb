@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
+import cors from 'cors'; // Import CORS
 import cookieParser from 'cookie-parser';
 import { connectDB } from './config/db.js'; // Import the database connection function
 import { apiRouter } from './routes/index.js';
@@ -12,6 +13,10 @@ dotenv.config(); // Load environment variables from the .env file
 const app = express();
 
 // Middleware
+app.use(cors({ 
+    origin: 'http://localhost:5175',  // Allow frontend to access backend
+    credentials: true // Allow cookies & authentication headers
+}));
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cookieParser()); // Middleware to parse cookies
 app.use(morgan('dev'));  // Middleware for logging HTTP requests in development mode

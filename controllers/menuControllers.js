@@ -1,5 +1,5 @@
 import { Menu } from "../models/menuModel.js";
-import { cloudinaryInstance } from "../config/cloudinaryConfig.js";
+import { cloudinary } from "../config/cloudinaryConfig.js";
 
 // Get all menu items
 export const getAllMenuItems = async (req, res) => {
@@ -27,7 +27,7 @@ export const getMenuItemById = async (req, res) => {
   }
 };
 
-// Create a new menu item
+
 export const createMenuItem = async (req, res) => {
   try {
     const { name, description, price, restaurant } = req.body;
@@ -35,7 +35,7 @@ export const createMenuItem = async (req, res) => {
     // Upload image to Cloudinary if provided
     let imageUrl = null;
     if (req.file) {
-      const result = await cloudinaryInstance.uploader.upload(req.file.path);
+      const result = await cloudinary.uploader.upload(req.file.path); // ✅ Correct usage
       imageUrl = result.secure_url;
     }
 
@@ -54,6 +54,7 @@ export const createMenuItem = async (req, res) => {
 };
 
 // Update a menu item
+// Update a menu item
 export const updateMenuItem = async (req, res) => {
   try {
     const { id } = req.params;
@@ -61,7 +62,7 @@ export const updateMenuItem = async (req, res) => {
 
     // Upload new image to Cloudinary if provided
     if (req.file) {
-      const result = await cloudinaryInstance.uploader.upload(req.file.path);
+      const result = await cloudinary.uploader.upload(req.file.path); // ✅ Correct usage
       updates.imageUrl = result.secure_url;
     }
 

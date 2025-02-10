@@ -1,4 +1,5 @@
 import express from "express";
+import { upload } from "../config/cloudinaryConfig.js"; // ✅ Use correct import
 import {
   getAllMenuItems,
   getMenuItemById,
@@ -7,7 +8,8 @@ import {
   deleteMenuItem,
 } from "../controllers/menuControllers.js";
 import { adminAuth } from "../middlewares/adminAuth.js";
-import { upload } from "../middlewares/multer.js";
+
+
 
 const router = express.Router();
 

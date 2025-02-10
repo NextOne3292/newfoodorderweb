@@ -4,7 +4,7 @@ import { restaurantRouter } from './restaurantRoutes.js';
 import { paymentRouter } from './paymentRoutes.js';
 import { orderRouter } from './orderRoutes.js';
 import { menuRouter } from './menuRoutes.js';
-import { couponRouter } from './couponRoutes.js';
+
 import { cartRouter } from './cartRoutes.js';
 import { adminRouter } from './adminRoutes.js';
 
@@ -26,7 +26,7 @@ router.use('/orders', orderRouter);
 router.use('/menu', menuRouter);
 
 // Coupon routes
-router.use('/coupons', couponRouter);
+
 
 // Cart routes
 router.use('/cart', cartRouter);
