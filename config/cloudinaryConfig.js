@@ -1,25 +1,10 @@
-import { v2 as cloudinary } from "cloudinary";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
-import multer from "multer";
+import { v2 as cloudinary } from 'cloudinary';
 
-// ✅ Configure Cloudinary
+// Configuration
 cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_API_KEY,
-  api_secret: process.env.CLOUD_API_SECRET,
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.CLOUD_API_KEY,
+    api_secret: process.env.CLOUD_API_SECRET, // Click 'View Credentials' below to copy your API secret
 });
 
-// ✅ Set up Multer Storage for Cloudinary
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "uploads", // Change folder name if needed
-    format: async (req, file) => "jpeg", // Supports jpg, png, jpeg
-    public_id: (req, file) => file.originalname, // Keep original file name
-  },
-});
-
-// ✅ Configure Multer Middleware
-const upload = multer({ storage });
-
-export { cloudinary, upload };
+export const cloudinaryInstance = cloudinary

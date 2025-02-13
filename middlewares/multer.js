@@ -1,4 +1,11 @@
-import multer from "multer";
-import { storage } from "../config/cloudinaryConfig.js"; // Import Cloudinary storage
+import multer, { diskStorage } from "multer";
 
-export const upload = multer({ storage });
+const storage = diskStorage({
+    filename: function (req, file, cb) {
+        console.log('file===',file);
+        
+        cb(null, file.originalname);
+    },
+});
+
+export const upload = multer({ storage: storage });

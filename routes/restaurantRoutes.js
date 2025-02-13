@@ -1,5 +1,6 @@
 import express from "express";
-import { upload } from "../config/cloudinaryConfig.js"; // ✅ Import correctly
+import { upload } from "../middlewares/multer.js";
+
 
 import {
   getAllRestaurants,

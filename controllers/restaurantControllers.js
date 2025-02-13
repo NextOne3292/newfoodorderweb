@@ -1,5 +1,5 @@
 import { Restaurant } from "../models/restaurantModel.js"; 
-import { cloudinary } from "../config/cloudinaryConfig.js";
+import { cloudinaryInstance } from "../config/cloudinaryConfig.js";
 
 
 // Get all restaurants
@@ -29,29 +29,40 @@ export const getRestaurantById = async (req, res) => {
 };
 
 // Create a new restaurant
-export const createRestaurant = async (req, res) => {
+export const createRestaurant = async (req, res, next) => {
     try {
         const { name, address, contact, cuisine } = req.body;
-        let imageUrl = "";
 
-        // Check if file is uploaded
-        if (req.file) {
-            imageUrl = req.file.path; // Get uploaded image URL from Cloudinary
+        if (!name || !address || !contact || !cuisine) {
+            return res.status(400).json({ message: "All fields are required" });
         }
 
-        const newRestaurant = new Restaurant({
+         // ✅ Define cloudinaryResponse with a default value to avoid ReferenceError
+         let cloudinaryResponse = { url: "" };
+
+        // Upload image if provided
+        if (req.file) {
+            cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
+        }
+
+        console.log("cldRes====", cloudinaryResponse);
+
+        // ✅ Use the correct model (Restaurant, not Course)
+        const restaurantData = new Restaurant({
             name,
             address,
             contact,
             cuisine,
-            image: imageUrl
+            image: cloudinaryResponse.url, // Ensuring it always has a value
+            
         });
 
-        await newRestaurant.save();
+        await restaurantData.save();
 
-        res.status(201).json({ success: true, data: newRestaurant });
+        res.status(201).json({ data: restaurantData, message: "Restaurant created successfully" });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        console.error("Error creating restaurant:", error);
+        return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
     }
 };
 
@@ -59,24 +70,32 @@ export const createRestaurant = async (req, res) => {
 export const updateRestaurant = async (req, res) => {
     try {
         const { id } = req.params;
-        const updates = req.body;
+        let updates = { ...req.body };
 
         // Upload new image to Cloudinary if provided
         if (req.file) {
-            updates.image = req.file.path; // Update image URL
+            const cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
+            updates.image = cloudinaryResponse.url; // Store Cloudinary URL
         }
 
-        const updatedRestaurant = await Restaurant.findByIdAndUpdate(id, updates, { new: true });
+        console.log("Cloudinary Upload Result:", updates.image);
+
+        const updatedRestaurant = await Restaurant.findByIdAndUpdate(id, updates, {
+            new: true,
+            runValidators: true, // Ensures schema validation
+        });
 
         if (!updatedRestaurant) {
             return res.status(404).json({ success: false, message: "Restaurant not found" });
         }
 
-        res.status(200).json({ success: true, data: updatedRestaurant });
+        res.status(200).json({ success: true, data: updatedRestaurant, message: "Restaurant updated successfully" });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        console.error("Error updating restaurant:", error);
+        res.status(500).json({ success: false, message: error.message || "Internal Server Error" });
     }
 };
+
 
 // Delete a restaurant
 export const deleteRestaurant = async (req, res) => {

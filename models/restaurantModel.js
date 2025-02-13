@@ -27,6 +27,7 @@ const restaurantSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Menu', // Reference to the Menu model
       },
+     
     ],
   },
   { timestamps: true } // Automatically add createdAt and updatedAt fields
