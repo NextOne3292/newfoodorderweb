@@ -14,7 +14,7 @@ const app = express();
 
 // Middleware
 app.use(cors({ 
-    origin: 'http://localhost:5175',  // Allow frontend to access backend
+    origin: 'http://localhost:5173',  // Allow frontend to access backend
     credentials: true // Allow cookies & authentication headers
 }));
 app.use(express.json()); // Middleware to parse JSON bodies
@@ -38,7 +38,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Internal Server Error', error: err.message });
 });
 
-// Define the port from environment variables or default to 5000
+// Define the port from environment variables or default to 3000
 const PORT = process.env.PORT || 3000;
 
 // Start the server

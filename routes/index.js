@@ -1,10 +1,12 @@
 import express from 'express';
+
+
 import { userRouter } from './userRoutes.js';
-import { restaurantRouter } from './restaurantRoutes.js';
+import { restaurantRouter } from './restaurantRouter.js';
 import { paymentRouter } from './paymentRoutes.js';
 import { orderRouter } from './orderRoutes.js';
 import { menuRouter } from './menuRoutes.js';
-
+import { searchRouter } from "./searchRouter.js";
 import { cartRouter } from './cartRoutes.js';
 import { adminRouter } from './adminRoutes.js';
 
@@ -24,7 +26,7 @@ router.use('/orders', orderRouter);
 
 // Menu routes
 router.use('/menu', menuRouter);
-
+router.use('/search', searchRouter); // Add the search route
 // Coupon routes
 
 

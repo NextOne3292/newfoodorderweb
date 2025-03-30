@@ -1,11 +1,22 @@
-import { Restaurant } from "../models/restaurantModel.js"; 
+import { Restaurant } from "../models/restaurantModel.js";
 import { cloudinaryInstance } from "../config/cloudinaryConfig.js";
-
 
 // Get all restaurants
 export const getAllRestaurants = async (req, res) => {
     try {
-        const restaurants = await Restaurant.find().populate("menu");
+        const { search } = req.query; // Get search keyword from query params
+
+        let filter = {};
+        if (search) {
+            filter = {
+                $or: [
+                    { name: { $regex: search, $options: "i" } }, // Case-insensitive name search
+                    { cuisines: { $regex: search, $options: "i" } }, // Search by cuisine type
+                ],
+            };
+        }
+
+        const restaurants = await Restaurant.find(filter).populate("menu");
         res.status(200).json({ success: true, data: restaurants });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -29,32 +40,31 @@ export const getRestaurantById = async (req, res) => {
 };
 
 // Create a new restaurant
-export const createRestaurant = async (req, res, next) => {
+export const createRestaurant = async (req, res) => {
     try {
-        const { name, address, contact, cuisine } = req.body;
+        const { name, address, contact, cuisines, menu, rating } = req.body;
 
-        if (!name || !address || !contact || !cuisine) {
-            return res.status(400).json({ message: "All fields are required" });
+        if (!name || !address || !contact) {
+            return res.status(400).json({ message: "Name, address, and contact are required" });
         }
 
-         // ✅ Define cloudinaryResponse with a default value to avoid ReferenceError
-         let cloudinaryResponse = { url: "" };
+        let imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaLGtEd0MJro4X9wDmT2vrvLT-HjKkyyWVmg&s";
 
         // Upload image if provided
         if (req.file) {
-            cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
+            const cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
+            imageUrl = cloudinaryResponse.url;
         }
 
-        console.log("cldRes====", cloudinaryResponse);
-
-        // ✅ Use the correct model (Restaurant, not Course)
         const restaurantData = new Restaurant({
             name,
             address,
             contact,
-            cuisine,
-            image: cloudinaryResponse.url, // Ensuring it always has a value
-            
+            cuisines: Array.isArray(cuisines) ? cuisines : JSON.parse(cuisines || '["Other"]'),
+
+            image: imageUrl,
+            menu: menu || [],
+            rating: rating || 0,
         });
 
         await restaurantData.save();
@@ -62,10 +72,11 @@ export const createRestaurant = async (req, res, next) => {
         res.status(201).json({ data: restaurantData, message: "Restaurant created successfully" });
     } catch (error) {
         console.error("Error creating restaurant:", error);
-        return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
+        res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
     }
 };
 
+// Update a restaurant
 // Update a restaurant
 export const updateRestaurant = async (req, res) => {
     try {
@@ -75,15 +86,13 @@ export const updateRestaurant = async (req, res) => {
         // Upload new image to Cloudinary if provided
         if (req.file) {
             const cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
-            updates.image = cloudinaryResponse.url; // Store Cloudinary URL
+            updates.image = cloudinaryResponse.url;
         }
-
-        console.log("Cloudinary Upload Result:", updates.image);
 
         const updatedRestaurant = await Restaurant.findByIdAndUpdate(id, updates, {
             new: true,
-            runValidators: true, // Ensures schema validation
-        });
+            runValidators: true,
+        }).populate("menu"); // ✅ Populate the menu field
 
         if (!updatedRestaurant) {
             return res.status(404).json({ success: false, message: "Restaurant not found" });
@@ -95,7 +104,6 @@ export const updateRestaurant = async (req, res) => {
         res.status(500).json({ success: false, message: error.message || "Internal Server Error" });
     }
 };
-
 
 // Delete a restaurant
 export const deleteRestaurant = async (req, res) => {
@@ -113,3 +121,19 @@ export const deleteRestaurant = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+// 🚀 Delete all restaurants (Admin Only)
+export const deleteAllRestaurants = async (req, res) => {
+    try {
+        const result = await Restaurant.deleteMany();
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: "No restaurants found to delete" });
+        }
+
+        res.status(200).json({ success: true, message: `${result.deletedCount} restaurants deleted successfully` });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+

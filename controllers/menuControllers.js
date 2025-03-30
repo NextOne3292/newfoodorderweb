@@ -1,13 +1,22 @@
 import { Menu } from "../models/menuModel.js";
 import { cloudinaryInstance } from "../config/cloudinaryConfig.js";
 
-// Get all menu items
 export const getAllMenuItems = async (req, res) => {
   try {
-    const menuItems = await Menu.find().populate("restaurant");
-    res.status(200).json({ success: true, data: menuItems });
+      const { search, restaurant } = req.query; // Get search keyword & restaurant ID from query params
+
+      let filter = {};
+      if (restaurant) {
+          filter.restaurant = restaurant; // Filter menu items by restaurant ID
+      }
+      if (search) {
+          filter.name = { $regex: search, $options: "i" }; // Case-insensitive search for menu item name
+      }
+
+      const menuItems = await Menu.find(filter).populate("restaurant"); // Apply filters
+      res.status(200).json({ success: true, data: menuItems });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+      res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -32,24 +41,28 @@ export const createMenuItem = async (req, res) => {
   try {
     const { name, description, price, restaurant } = req.body;
 
-    if (!name || !description || !price || !restaurant) {
+    // ✅ Convert isAvailable to a boolean
+    let isAvailable = req.body.isAvailable === "true"; // Ensures it's a boolean
+
+    // ✅ Proper validation check
+    if (!name || !description || !price || !restaurant || isAvailable === undefined) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    let imageUrl = "https://example.com/food-placeholder-image.png"; // Default image
+    let image = "https://example.com/food-placeholder-image.png"; // Default image
 
     // ✅ Check if an image file is received
     if (req.file) {
-      console.log("File received:", req.file); // Debugging
-
+      console.log("File received:", req.file);
       try {
         // ✅ Upload to Cloudinary
         const cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path, {
-          folder: "menu_items", // Store in a specific folder
-          use_filename: true, // Use the original filename
+          folder: "menu_items",
+          use_filename: true,
         });
+
         console.log("Cloudinary Upload Result:", cloudinaryResponse);
-        imageUrl = cloudinaryResponse.secure_url; // Update image URL
+        image = cloudinaryResponse.secure_url; // Update image URL
       } catch (uploadError) {
         console.error("Cloudinary Upload Error:", uploadError);
         return res.status(500).json({ success: false, message: "Image upload failed" });
@@ -58,7 +71,7 @@ export const createMenuItem = async (req, res) => {
       console.log("No file received! Using default image.");
     }
 
-    // ✅ Convert price to a proper number
+    // ✅ Convert price to a number
     const numericPrice = parseFloat(price);
     if (isNaN(numericPrice) || numericPrice <= 0) {
       return res.status(400).json({ success: false, message: "Invalid price format. Price must be a positive number." });
@@ -70,16 +83,17 @@ export const createMenuItem = async (req, res) => {
       description,
       price: numericPrice,
       restaurant,
-      imageUrl, // Use the updated image URL
+      image,
+      isAvailable, // ✅ Now it's correctly defined
     });
 
     res.status(201).json({
       success: true,
       data: {
         ...newMenuItem._doc,
-        price: `₹${numericPrice.toFixed(2)}` // Format price in response
+        price: `₹${numericPrice.toFixed(2)}`,
       },
-      message: "Menu item created successfully"
+      message: "Menu item created successfully",
     });
 
   } catch (error) {
@@ -97,7 +111,7 @@ export const updateMenuItem = async (req, res) => {
     if (req.file) {
       const cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
       console.log("Cloudinary Upload Result:", cloudinaryResponse);
-      updates.imageUrl = cloudinaryResponse.secure_url;
+      updates.image= cloudinaryResponse.secure_url;
     }
 
     // ✅ Convert price to a number
@@ -144,3 +158,19 @@ export const deleteMenuItem = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+// Delete all menu items
+export const deleteAllMenuItems = async (req, res) => {
+  try {
+    const result = await Menu.deleteMany({}); // Deletes all documents from the Menu collection
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, message: "No menu items found to delete" });
+    }
+
+    res.status(200).json({ success: true, message: "All menu items deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+

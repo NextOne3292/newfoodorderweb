@@ -1,13 +1,11 @@
 import { User } from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utilities/token.js";
-
-
 export const userSignup = async (req, res, next) => {
     try {
         console.log("hitted");
 
-        const { name, email, password, mobile, profilePic } = req.body;
+        const { name, email, password, mobile } = req.body;
 
         if (!name || !email || !password || !mobile) {
             return res.status(400).json({ message: "all fields are required" });
@@ -21,7 +19,7 @@ export const userSignup = async (req, res, next) => {
 
         const hashedPassword = bcrypt.hashSync(password, 10);
 
-        const userData = new User({ name, email, password: hashedPassword, mobile, profilePic });
+        const userData = new User({ name, email, password: hashedPassword, mobile });
         await userData.save();
 
         const token = generateToken(userData._id);
@@ -32,6 +30,8 @@ export const userSignup = async (req, res, next) => {
         return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
     }
 };
+
+
 
 export const userlogin = async (req, res, next) => {
     try {
@@ -61,8 +61,8 @@ export const userlogin = async (req, res, next) => {
                 id: userExist._id,
                 name: userExist.name,
                 email: userExist.email,
-                mobile: userExist.mobile,
-                profilePic: userExist.profilePic,
+                mobile: userExist.mobile
+            
             },
             message: "User login success",
         });
@@ -85,13 +85,13 @@ export const userProfile = async (req, res, next) => {
 export const updateUser = async (req, res, next) => {
     try {
         const userId = req.user.id; // Extract user ID from `userAuth` middleware
-        const { name, email, mobile, profilePic } = req.body;
+        const { name, email, mobile} = req.body;
 
-        if (!name && !email && !mobile && !profilePic) {
+        if (!name && !email && !mobile ) {
             return res.status(400).json({ message: "No fields to update" });
         }
 
-        const updatedData = { name, email, mobile, profilePic };
+        const updatedData = { name, email, mobile };
 
         // Remove undefined fields
         Object.keys(updatedData).forEach(key => {

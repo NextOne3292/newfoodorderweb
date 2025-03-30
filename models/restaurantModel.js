@@ -4,7 +4,8 @@ const restaurantSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true, // Restaurant name is mandatory
+      required: true,
+      index: true, // Adding an index for faster search
     },
     address: {
       type: String,
@@ -14,23 +15,28 @@ const restaurantSchema = new mongoose.Schema(
       type: String,
       required: true, // Contact info is mandatory (e.g., phone or email)
     },
-    cuisine: {
-      type: String,
-      default: 'Other', // Default to 'Other' if no specific cuisine is provided
+    cuisines: {
+      type: [String], // Array to store multiple cuisines
+      default: ['Other'],
     },
     image: {
       type: String,
       default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaLGtEd0MJro4X9wDmT2vrvLT-HjKkyyWVmg&s",
-  },
+    },
     menu: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Menu', // Reference to the Menu model
       },
-     
     ],
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5, // Ensures the rating stays between 0 and 5
+    },
   },
-  { timestamps: true } // Automatically add createdAt and updatedAt fields
+  { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
 
 export const Restaurant = mongoose.model('Restaurant', restaurantSchema);

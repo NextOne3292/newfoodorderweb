@@ -5,6 +5,7 @@ const menuSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true, // Menu item name is mandatory
+      index: true,
     },
     description: {
       type: String, // Short description of the menu item
@@ -18,7 +19,7 @@ const menuSchema = new mongoose.Schema(
       ref: "Restaurant", // Reference to the Restaurant model
       required: true,
     },
-    imageUrl: {
+    image: {
       type: String,
       default: "https://example.com/food-placeholder-image.png", // Default placeholder image
     },
