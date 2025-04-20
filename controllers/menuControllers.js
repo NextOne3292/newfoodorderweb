@@ -13,7 +13,7 @@ export const getAllMenuItems = async (req, res) => {
           filter.name = { $regex: search, $options: "i" }; // Case-insensitive search for menu item name
       }
 
-      const menuItems = await Menu.find(filter).populate("restaurant"); // Apply filters
+      const menuItems = await Menu.find(filter).populate("restaurant","name"); // Apply filters
       res.status(200).json({ success: true, data: menuItems });
   } catch (error) {
       res.status(500).json({ success: false, message: error.message });
@@ -24,7 +24,7 @@ export const getAllMenuItems = async (req, res) => {
 export const getMenuItemById = async (req, res) => {
   try {
     const { id } = req.params;
-    const menuItem = await Menu.findById(id).populate("restaurant");
+    const menuItem = await Menu.findById(id).populate("restaurant", "name");
 
     if (!menuItem) {
       return res.status(404).json({ success: false, message: "Menu item not found" });
@@ -105,42 +105,43 @@ export const createMenuItem = async (req, res) => {
 export const updateMenuItem = async (req, res) => {
   try {
     const { id } = req.params;
-    let updates = { ...req.body };
+    const existingMenuItem = await Menu.findById(id);
 
-    // ✅ Upload new image to Cloudinary if provided
-    if (req.file) {
-      const cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
-      console.log("Cloudinary Upload Result:", cloudinaryResponse);
-      updates.image= cloudinaryResponse.secure_url;
-    }
-
-    // ✅ Convert price to a number
-    if (updates.price) {
-      updates.price = parseFloat(updates.price);
-      if (isNaN(updates.price)) {
-        return res.status(400).json({ success: false, message: "Invalid price format" });
-      }
-    }
-
-    const updatedMenuItem = await Menu.findByIdAndUpdate(id, updates, { new: true });
-
-    if (!updatedMenuItem) {
+    if (!existingMenuItem) {
       return res.status(404).json({ success: false, message: "Menu item not found" });
     }
 
-    // ✅ Format the price with currency symbol before sending response
-    const formattedMenuItem = {
-      ...updatedMenuItem._doc,
-      price: `₹${updatedMenuItem.price.toFixed(2)}`, // Adds ₹ symbol
+    const { name, description, price, restaurant } = req.body;
+    const isAvailable = req.body.isAvailable === "true";
+
+    let updatedFields = {
+      name,
+      description,
+      price,
+      restaurant,
+      isAvailable,
     };
 
-    res.status(200).json({ success: true, data: formattedMenuItem, message: "Menu item updated successfully" });
+    // ✅ Handle image update only if a new image is uploaded
+    if (req.file) {
+      // Upload new image to Cloudinary
+      const result = await cloudinaryInstance.uploader.upload(req.file.path, {
+        folder: "food-menu",
+      });
+      updatedFields.image = result.secure_url;
+    } else {
+      // ✅ Keep existing image if no new one is uploaded
+      updatedFields.image = existingMenuItem.image;
+    }
+
+    const updatedItem = await Menu.findByIdAndUpdate(id, updatedFields, { new: true }).populate("restaurant","name");
+
+    res.status(200).json({ success: true, data: updatedItem });
   } catch (error) {
-    console.error("Error updating menu item:", error);
-    res.status(500).json({ success: false, message: error.message || "Internal Server Error" });
+    console.error("Update Error:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
-
 
 // Delete a menu item
 export const deleteMenuItem = async (req, res) => {

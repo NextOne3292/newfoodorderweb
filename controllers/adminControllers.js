@@ -8,7 +8,7 @@ export const adminSignUp = async (req, res, next) => {
   try {
       console.log("hitted");
 
-      const { name, email, password, mobile, profilePic } = req.body;
+      const { name, email, password, mobile } = req.body;
 
       if (!name || !email || !password || !mobile) {
           return res.status(400).json({ message: "all fields are required" });
@@ -22,7 +22,7 @@ export const adminSignUp = async (req, res, next) => {
 
       const hashedPassword = bcrypt.hashSync(password, 10);
 
-      const adminData = new admin({ name, email, password: hashedPassword, mobile, profilePic });
+      const adminData = new admin({ name, email, password: hashedPassword, mobile });
       await adminData.save();
 
       const token = generateToken(adminData._id);
@@ -69,7 +69,7 @@ export const adminLogin = async (req, res, next) => {
               name: adminExist.name,
               email: adminExist.email,
               mobile: adminExist.mobile,
-              profilePic: adminExist.profilePic,
+              
           },
           message: "Admin login successful",
       });
@@ -127,3 +127,20 @@ export const adminLogout = async (req, res, next) => {
   }
 };
 
+// Delete user by ID
+export const deleteUser = async (req, res) => {
+    const userId = req.params.id;
+  
+    try {
+      const deletedUser = await User.findByIdAndDelete(userId);
+  
+      if (!deletedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.status(200).json({ message: 'User deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Error deleting user', error });
+    }
+  };
+  

@@ -31,4 +31,4 @@ const menuSchema = new mongoose.Schema(
   { timestamps: true } // Automatically add createdAt and updatedAt fields
 );
 
-export const Menu = mongoose.model("Menu", menuSchema);
+export const Menu= mongoose.model('Menu', menuSchema);

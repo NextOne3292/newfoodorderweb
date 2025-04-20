@@ -1,81 +1,103 @@
-import { Order } from '../models/orderModel.js';
+import { Order } from "../models/orderModel.js";
+import { Cart } from "../models/cartModel.js";
 
-// Create an order (Protected route)
+// 🧾 Create Order After Payment Success
 export const createOrder = async (req, res) => {
-  const { userId, items, totalPrice, deliveryAddress, estimatedDeliveryTime } = req.body;
-
   try {
+    const { sessionId, cartId, deliveryAddress } = req.body;
+
+    const cart = await Cart.findById(cartId);
+    if (!cart) {
+      return res.status(404).json({ success: false, message: "Cart not found" });
+    }
+
     const order = new Order({
-      userId,
-      items,
-      totalPrice,
+      user: req.user.id,
+      items: cart.items.map(item => ({
+        menuItem: item.menuItem,
+        quantity: item.quantity,
+      })),
       deliveryAddress,
-      estimatedDeliveryTime,
+      totalAmount: cart.totalPrice,
+      paymentStatus: "Paid",
+      paymentMethod: "Card",
+      stripeSessionId: sessionId,
     });
 
     await order.save();
-    res.status(201).json(order);
+
+    // ✅ Clear cart
+    cart.items = [];
+    cart.totalPrice = 0;
+    cart.markModified("items");
+    await cart.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Order placed successfully",
+      order,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error creating order', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to place order",
+      error: error.message,
+    });
   }
 };
 
-// Get all orders (Admin only)
-export const getOrders = async (req, res) => {
+// 🧾 Get Orders for Logged-in User
+export const getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find().populate('userId items.menuItemId');
-    res.status(200).json(orders);
+    const orders = await Order.find({ user: req.user.id }).populate("items.menuItem", "name price image");
+    res.status(200).json({ success: true, orders });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching orders', error: error.message });
+    res.status(500).json({ success: false, message: "Failed to fetch orders", error: error.message });
   }
 };
 
-// Get a specific order by ID (Protected route)
-export const getOrder = async (req, res) => {
+// 🧾 Admin - Get All Orders
+export const getAllOrders = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate('userId items.menuItemId');
+    const orders = await Order.find({})
+      .populate("user", "name email")
+      .populate("items.menuItem", "name price image");
 
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    res.status(200).json(order);
+    res.status(200).json({ success: true, orders });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching order', error: error.message });
+    res.status(500).json({ success: false, message: "Failed to fetch all orders", error: error.message });
   }
 };
-
-// Update order status (Admin only)
+// 🧾 Admin - Update Order Status
+// 🧾 Admin - Update Order Status
 export const updateOrderStatus = async (req, res) => {
-  const { status } = req.body;
-
   try {
-    const order = await Order.findById(req.params.id);
+    const { orderId } = req.params;
+    const { status } = req.body;
 
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+    const allowedStatuses = ["Placed", "Confirmed", "Preparing", "Out for Delivery", "Delivered", "Cancelled"];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid order status" });
     }
 
-    order.status = status || order.status;
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    order.orderStatus = status;
     await order.save();
 
-    res.status(200).json(order);
+    res.status(200).json({
+      success: true,
+      message: "Order status updated",
+      order,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating order', error: error.message });
-  }
-};
-
-// Delete an order (Admin only)
-export const deleteOrder = async (req, res) => {
-  try {
-    const order = await Order.findByIdAndDelete(req.params.id);
-
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    res.status(200).json({ message: 'Order deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error deleting order', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to update order status",
+      error: error.message,
+    });
   }
 };

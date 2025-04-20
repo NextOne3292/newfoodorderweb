@@ -23,7 +23,17 @@ export const userSignup = async (req, res, next) => {
         await userData.save();
 
         const token = generateToken(userData._id);
-        res.cookie("token", token);
+        
+
+      
+        
+          res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production", // true in production
+            sameSite: "lax", // or "none" if frontend and backend are on different domains
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+          });
+           
 
         return res.json({ data: userData, message: "user account created" });
     } catch (error) {
@@ -53,7 +63,16 @@ export const userlogin = async (req, res, next) => {
             return res.status(401).json({ message: "user not authenticated" });
         }
         const token = generateToken(userExist._id);
-        res.cookie("token", token, { httpOnly: true });
+        
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production", // true in production
+            sameSite: "lax", // or "none" if frontend and backend are on different domains
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+          });
+           
+        
 
         // Respond with the user data and success message
         return res.json({
@@ -113,13 +132,23 @@ export const updateUser = async (req, res, next) => {
 
 export const userLogout = async (req, res, next) => {
     try {
-        res.clearCookie("token");
-
-        return res.json({ message: "user logout success" });
+       
+        res.cookie("token",  {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production", // true in production
+            sameSite: "lax", // or "none" if frontend and backend are on different domains
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+          });
+           
+          
+      return res.json({ message: "User logout success" });
     } catch (error) {
-        return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
+      return res
+        .status(error.statusCode || 500)
+        .json({ message: error.message || "Internal server error" });
     }
-};
+  };
+  
 export const checkUser = async (req, res, next) => {
     try {
         const { email, mobile } = req.query;
@@ -141,3 +170,11 @@ export const checkUser = async (req, res, next) => {
         return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
     }
 };
+export const getUserInfo = async (req, res) => {
+    try {
+      // `req.user` is added by protect middleware
+      res.status(200).json(req.user);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get user info", error });
+    }
+  };

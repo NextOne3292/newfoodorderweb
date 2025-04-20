@@ -1,24 +1,25 @@
+
 import mongoose from "mongoose";
 
 const cartSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model
+      ref: "User",
       required: true,
     },
     items: [
       {
         menuItem: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Menu", // Reference to the Menu model
+          ref: "Menu",
           required: true,
         },
         quantity: {
           type: Number,
           required: true,
           min: 1,
-          default: 1, // Default quantity is 1
+          default: 1,
         },
         price: {
           type: Number,
@@ -26,6 +27,11 @@ const cartSchema = new mongoose.Schema(
         },
       },
     ],
+    totalPrice: {  // ✅ ADD THIS FIELD
+      type: Number,
+      required: true,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

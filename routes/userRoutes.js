@@ -1,11 +1,11 @@
 import e from "express";
-import { userlogin, userLogout, userProfile,updateUser, userSignup ,checkUser} from "../controllers/userControllers.js";
+import { userlogin, userLogout, userProfile,updateUser, userSignup , getUserInfo, checkUser} from "../controllers/userControllers.js";
 import { userAuth } from "../middlewares/userAuth.js";
-import { upload } from "../middlewares/multer.js";
+
 const router = e.Router();
 
 //signup
-router.post("/signup", upload.single("profilePic"), userSignup);
+router.post("/signup", userSignup);
 
 //login
 router.post("/login", userlogin);
@@ -15,15 +15,11 @@ router.get("/profile", userAuth, userProfile);
 
 router.put("/update", userAuth, updateUser);
 //logout
-router.get("/logout", userAuth, userLogout);
+router.post("/logout",  userLogout);
+// ✅ New route for getting logged-in user info
+router.get("/me", userAuth, getUserInfo);
 
 router.get("/check", checkUser);
-//profile-update
-//forgot-password
-//change-password
-//account-deactivate
 
-
-//check-user
 
 export { router as userRouter };

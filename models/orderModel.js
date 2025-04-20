@@ -1,46 +1,51 @@
 import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema({
-  userId: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   items: [
     {
-      menuItemId: {
+      menuItem: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Menu',
+        ref: "Menu",
         required: true,
       },
       quantity: {
         type: Number,
         required: true,
-        default: 1,
       },
     },
   ],
-  totalPrice: {
+  deliveryAddress: {
+    addressLine1: String,
+    addressLine2: String,
+    city: String,
+    state: String,
+    postalCode: String,
+    country: String,
+  },
+  totalAmount: {
     type: Number,
     required: true,
   },
-  status: {
-    type: String,
-    enum: ['pending', 'confirmed', 'delivered', 'cancelled'],
-    default: 'pending',
-  },
   paymentStatus: {
     type: String,
-    enum: ['unpaid', 'paid', 'refunded'],
-    default: 'unpaid',
+    default: "Pending", // Could be: "Pending", "Paid", "Failed", etc.
   },
-  deliveryAddress: {
+  paymentMethod: String,
+  stripeSessionId: String,
+  orderStatus: {
     type: String,
-    required: true, // Ensures a delivery address is provided
+    enum: ["Placed", "Confirmed", "Preparing", "Out for Delivery", "Delivered", "Cancelled"],
+    default: "Placed",
   },
-  estimatedDeliveryTime: {
-    type: Date, // For estimating delivery times
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-}, { timestamps: true });
+});
 
-export const Order= mongoose.model('Order', orderSchema);
+export const Order = mongoose.model("Order", orderSchema);
