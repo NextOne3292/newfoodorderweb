@@ -14,8 +14,8 @@ const app = express();
 
 // Middleware
 app.use(cors({ 
-    origin: 'http://localhost:5173',  // Allow frontend to access backend
-    credentials: true // Allow cookies & authentication headers
+    origin: ['http://localhost:5173', 'https://food-order-web-app-frontend2.vercel.app'],
+    credentials: true
 }));
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cookieParser()); // Middleware to parse cookies
