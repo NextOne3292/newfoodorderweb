@@ -27,12 +27,13 @@ export const userSignup = async (req, res, next) => {
 
       
         
-          res.cookie("token", token, {
+        res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // true in production
-            sameSite: "lax", // or "none" if frontend and backend are on different domains
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            secure: true,              // ✔ required for HTTPS (Vercel)
+            sameSite: "none",          // ✔ allows cross-origin requests
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
           });
+          
            
 
         return res.json({ data: userData, message: "user account created" });
@@ -67,10 +68,11 @@ export const userlogin = async (req, res, next) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // true in production
-            sameSite: "lax", // or "none" if frontend and backend are on different domains
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            secure: true,              // ✔ required for HTTPS (Vercel)
+            sameSite: "none",          // ✔ allows cross-origin requests
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
           });
+          
            
         
 
@@ -133,13 +135,13 @@ export const updateUser = async (req, res, next) => {
 export const userLogout = async (req, res, next) => {
     try {
        
-        res.cookie("token",  {
+        res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // true in production
-            sameSite: "lax", // or "none" if frontend and backend are on different domains
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            secure: true,              // ✔ required for HTTPS (Vercel)
+            sameSite: "none",          // ✔ allows cross-origin requests
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
           });
-           
+          
           
       return res.json({ message: "User logout success" });
     } catch (error) {
