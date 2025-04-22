@@ -60,7 +60,12 @@ export const adminLogin = async (req, res, next) => {
       const token = generateToken(adminExist._id, "admin");
 
       // Set the token in the cookie
-      res.cookie("token", token, { httpOnly: true });
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: true, 
+        sameSite: "None", 
+      });
+      
 
       // Respond with admin details (excluding password)
       return res.json({
@@ -118,14 +123,21 @@ export const updateUserRole = async (req, res) => {
   }
 };
 export const adminLogout = async (req, res, next) => {
-  try {
-      res.clearCookie("token");
-
-      return res.json({ message: "admin logout success" });
-  } catch (error) {
-      return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" });
-  }
-};
+    try {
+      res.clearCookie("token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+      });
+  
+      return res.json({ message: "Admin logout success" });
+    } catch (error) {
+      return res
+        .status(error.statusCode || 500)
+        .json({ message: error.message || "Internal server error" });
+    }
+  };
+  
 
 // Delete user by ID
 export const deleteUser = async (req, res) => {
