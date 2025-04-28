@@ -14,20 +14,20 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: function (origin, callback) {
-      if (
-        !origin || 
-        origin === 'http://localhost:5173' ||
-        origin === 'https://food-order-web-app-frontend2-9s1l.vercel.app' ||
-        /\.vercel\.app$/.test(origin)
-      ) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS: ' + origin));
-      }
-    },
-    credentials: true
-  }));
+  origin: function (origin, callback) {
+    if (
+      !origin ||
+      origin === 'http://localhost:5173' ||
+      origin === 'https://food-order-web-app-frontend2-9s1l.vercel.app'
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS: ' + origin));
+    }
+  },
+  credentials: true
+}));
+
   
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cookieParser()); // Middleware to parse cookies
