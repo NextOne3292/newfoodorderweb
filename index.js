@@ -18,7 +18,7 @@ app.use(cors({
     if (
       !origin ||
       origin === 'http://localhost:5173' ||
-      origin === 'https://food-order-web-app-frontend2-9s1l.vercel.app'
+      origin === 'https://food-order-web-app-frontend2.vercel.app'
     ) {
       callback(null, true);
     } else {
