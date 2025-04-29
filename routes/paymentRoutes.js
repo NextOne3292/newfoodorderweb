@@ -16,7 +16,6 @@ const client_domain = process.env.CLIENT_DOMAIN;
 router.post("/create-checkout-session", userAuth, async (req, res) => {
   try {
     const { items, deliveryAddress, cartId } = req.body;
-
     console.log("📦 cartId received from frontend:", cartId);
 
     const lineItems = await Promise.all(
@@ -49,14 +48,14 @@ router.post("/create-checkout-session", userAuth, async (req, res) => {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${client_domain}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${client_domain}/cancel`,
+      success_url: `${client_domain}/payment-success?session_id={CHECKOUT_SESSION_ID}`, // ✅ Redirect URL on success
+      cancel_url: `${client_domain}/payment-fail`, // ✅ More consistent naming
       metadata,
     });
 
-    res.json({ success: true, sessionId: session.id });
+    res.status(200).json({ success: true, sessionId: session.id });
   } catch (error) {
-    console.error("Stripe Checkout Error:", error);
+    console.error("Stripe Checkout Error:", error.message);
     res.status(500).json({ success: false, message: "Failed to create Stripe checkout session" });
   }
 });
@@ -108,7 +107,7 @@ router.get("/verify-payment", async (req, res) => {
 
     res.json({ success: true, order });
   } catch (error) {
-    console.error("Payment Verification Error:", error);
+    console.error("Payment Verification Error:", error.message);
     res.status(500).json({ success: false, message: "Payment verification failed" });
   }
 });
