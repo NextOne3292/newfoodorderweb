@@ -13,22 +13,10 @@ dotenv.config(); // Load environment variables from the .env file
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: function (origin, callback) {
-    if (
-      !origin ||
-      origin === 'http://localhost:5173' ||
-      origin === 'https://food-order-web-app-frontend2.vercel.app'
-    ) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS: ' + origin));
-    }
-  },
-  credentials: true
+app.use(cors({ 
+    origin: ['http://localhost:5173','https://food-order-web-app-frontend2.vercel.app'],
+    credentials: true
 }));
-
-  
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cookieParser()); // Middleware to parse cookies
 app.use(morgan('dev'));  // Middleware for logging HTTP requests in development mode
