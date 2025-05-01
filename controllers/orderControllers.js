@@ -101,3 +101,69 @@ export const updateOrderStatus = async (req, res) => {
     });
   }
 };
+
+export const deleteOrderItem = async (req, res) => {
+  const { orderId, itemId } = req.params;
+
+  try {
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    // Optional: Check if logged-in user is the owner
+    if (order.user.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: "Not authorized to modify this order" });
+    }
+
+    // Find the item index
+    const itemIndex = order.items.findIndex(item => item._id.toString() === itemId);
+    if (itemIndex === -1) {
+      return res.status(404).json({ success: false, message: "Item not found in the order" });
+    }
+
+    // Remove item
+    order.items.splice(itemIndex, 1);
+
+    // Optional: If order is empty, delete the entire order
+    if (order.items.length === 0) {
+      await order.deleteOne();
+      return res.status(200).json({ success: true, message: "Item deleted and empty order removed" });
+    }
+
+    // Save changes
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Item deleted successfully",
+      updatedOrder: order
+    });
+  } catch (err) {
+    console.error("Error deleting item:", err.message);
+    res.status(500).json({ success: false, message: "Failed to delete item" });
+  }
+};
+
+export const deleteEntireOrder = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    if (order.user.toString() !== req.user.id && !req.user.isAdmin) {
+      return res.status(403).json({ success: false, message: "Not authorized" });
+    }
+
+    await order.deleteOne();
+
+    res.status(200).json({ success: true, message: "Order deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to delete order" });
+  }
+};

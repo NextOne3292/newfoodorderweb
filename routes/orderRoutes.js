@@ -3,7 +3,9 @@ import {
   createOrder,
   getMyOrders,
   getAllOrders,
-  updateOrderStatus, // 👈 new controller for admin
+  updateOrderStatus,
+   // 👈 new controller for admin
+   deleteOrderItem,
 } from "../controllers/orderControllers.js";
 
 import { userAuth } from "../middlewares/userAuth.js";
@@ -18,5 +20,6 @@ router.get("/", userAuth, getMyOrders);
 // Admin route
 router.get("/all", userAuth, adminAuth, getAllOrders); // 👈 only admin can access this
 router.put("/:orderId/status", userAuth, adminAuth, updateOrderStatus); 
+router.delete("/:orderId/item/:itemId", userAuth, deleteOrderItem);
 
 export { router as orderRouter };
