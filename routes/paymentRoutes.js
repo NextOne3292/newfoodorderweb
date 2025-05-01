@@ -11,12 +11,21 @@ dotenv.config();
 
 const router = express.Router();
 const stripe = new Stripe(process.env.Stripe_private_Api_Key);
-const client_domain = process.env.CLIENT_DOMAIN;
+
+// Optional: whitelist of allowed client domains
+const allowedDomains = [
+  "http://localhost:5173",
+  "https://your-vercel-domain.vercel.app"
+];
 
 router.post("/create-checkout-session", userAuth, async (req, res) => {
   try {
-    const { items, deliveryAddress, cartId } = req.body;
-    console.log("📦 cartId received from frontend:", cartId);
+    const { items, deliveryAddress, cartId, clientDomain } = req.body;
+
+    // Validate domain origin
+    if (!allowedDomains.includes(clientDomain)) {
+      return res.status(400).json({ success: false, message: "Invalid client domain" });
+    }
 
     const lineItems = await Promise.all(
       items.map(async (item) => {
@@ -48,8 +57,8 @@ router.post("/create-checkout-session", userAuth, async (req, res) => {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${client_domain}/payment-success?session_id={CHECKOUT_SESSION_ID}`, // ✅ Redirect URL on success
-      cancel_url: `${client_domain}/cancel`, // ✅ More consistent naming
+      success_url: `${clientDomain}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${clientDomain}/cancel`,
       metadata,
     });
 
