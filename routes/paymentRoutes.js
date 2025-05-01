@@ -49,7 +49,7 @@ router.post("/create-checkout-session", userAuth, async (req, res) => {
       line_items: lineItems,
       mode: "payment",
       success_url: `${client_domain}/payment-success?session_id={CHECKOUT_SESSION_ID}`, // ✅ Redirect URL on success
-      cancel_url: `${client_domain}/payment-fail`, // ✅ More consistent naming
+      cancel_url: `${client_domain}/cancel`, // ✅ More consistent naming
       metadata,
     });
 
