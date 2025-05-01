@@ -15,7 +15,7 @@ const stripe = new Stripe(process.env.Stripe_private_Api_Key);
 // Optional: whitelist of allowed client domains
 const allowedDomains = [
   "http://localhost:5173",
-  "https://your-vercel-domain.vercel.app"
+  "https://food-order-web-app-frontend2.vercel.app"
 ];
 
 router.post("/create-checkout-session", userAuth, async (req, res) => {
